@@ -1,4 +1,5 @@
 const Admin = require("../models/adminModel");
+const Senior = require("../models/seniorModel");
 const { verifyToken } = require("../utils/helper");
 
 // Verify token and attach admin to request
@@ -18,7 +19,6 @@ const adminAuth = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
             return res.status(401).json({ message: error.message });
         }
     }
@@ -28,4 +28,29 @@ const adminAuth = async (req, res, next) => {
     }
 };
 
-module.exports = { adminAuth };
+const seniorAuth = async (req, res, next) => {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+        try {
+            token = req.headers.authorization.split(" ")[1];
+            const decoded = verifyToken(token);
+
+            req.senior = await Senior.findById(decoded.id).select("-password");
+
+            if (!req.senior) {
+                return res.status(401).json({ message: "Senior not found" });
+            }
+
+            next();
+        } catch (error) {
+            return res.status(401).json({ message: error.message });
+        }
+    }
+
+    if (!token) {
+        return res.status(401).json({ message: "Not authorized, no token" });
+    }
+};
+
+module.exports = { adminAuth, seniorAuth };
