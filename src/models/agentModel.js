@@ -12,7 +12,13 @@ const agentSchema = new mongoose.Schema(
         senior: { type: mongoose.Schema.Types.ObjectId, ref: "Senior" },
         master: { type: mongoose.Schema.Types.ObjectId, ref: "Master" },
         createdBy: { type: mongoose.Schema.Types.ObjectId, refPath: "createdByModel" },
-        createdByModel: { type: String, enum: ["Senior", "Master"] },
+        createdByModel: { type: String, enum: ["Admin", "Senior", "Master"] },
+        status: {
+            type: String,
+            enum: ["ACTIVE", "BANNED"],
+            default: "ACTIVE",
+        },
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
