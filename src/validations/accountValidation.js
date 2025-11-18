@@ -15,7 +15,12 @@ const accountUpdateSchema = Joi.object({
     commission: commissionValidationSchema.required(),
 });
 
+const userAccountUpdateSchema = Joi.object({
+    limit: limitValidationSchema.required(),
+});
+
 module.exports = {
     accountCreateSchema,
     accountUpdateSchema,
+    userAccountUpdateSchema,
 };

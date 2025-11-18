@@ -8,4 +8,6 @@ router.use("/master", require("./masterRoute"));
 
 router.use("/agent", require("./agentRoute"));
 
+router.use("/user", require("./userRoute"));
+
 module.exports = router;
