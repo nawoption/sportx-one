@@ -142,7 +142,11 @@ const masterController = {
         try {
             const { username, password, limit, commission } = req.body;
 
-            const createdBy = req.admin ? req.admin._id : req.senior._id;
+            // Determine who is creating this user
+            const actor = req.admin || req.senior;
+            if (!actor) return res.status(403).json({ message: "unauthorized" });
+            const createdBy = actor._id;
+            const createdByModel = req.admin ? "Admin" : req.senior ? "Senior" : null;
 
             // Check if username already exists
             const existingMaster = await Master.findOne({ username });
@@ -165,7 +169,7 @@ const masterController = {
                 commissionSetting: commissionSetting._id,
                 senior: req.senior ? req.senior._id : null,
                 createdBy,
-                createdByModel: req.admin ? "Admin" : "Senior",
+                createdByModel,
             });
 
             await newMaster.save();
@@ -176,7 +180,7 @@ const masterController = {
         }
     },
 
-    getAllmasters: async (req, res) => {
+    getAllMasters: async (req, res) => {
         try {
             let { page, limit, search, status } = req.query;
 
@@ -186,11 +190,16 @@ const masterController = {
 
             // build query
             let query = {};
+            if (req.admin) {
+                // Admin can see all masters
+                query.isDeleted = false;
+            } else if (req.senior) {
+                // Senior can see only their created masters
+                query = { createdBy: req.senior._id, createdByModel: "Senior", isDeleted: false };
+            }
+
             if (search) {
-                query.$or = [
-                    { name: { $regex: search, $options: "i" } },
-                    { username: { $regex: search, $options: "i" } },
-                ];
+                query.username = { $regex: search, $options: "i" };
             }
             if (status) query.status = status;
 
