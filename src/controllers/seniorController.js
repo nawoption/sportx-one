@@ -168,7 +168,7 @@ const seniorController = {
         }
     },
 
-    getAllseniors: async (req, res) => {
+    getAllSeniors: async (req, res) => {
         try {
             let { page, limit, search, status } = req.query;
 
@@ -179,10 +179,7 @@ const seniorController = {
             // build query
             let query = {};
             if (search) {
-                query.$or = [
-                    { name: { $regex: search, $options: "i" } },
-                    { username: { $regex: search, $options: "i" } },
-                ];
+                query.username = { $regex: search, $options: "i" };
             }
             if (status) query.status = status;
 
