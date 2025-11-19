@@ -1,6 +1,7 @@
 const Senior = require("../models/seniorModel");
 const LimitSetting = require("../models/limitSettingModel");
 const CommissionSetting = require("../models/commissionSettingModel");
+const BalanceAccount = require("../models/balanceAccountModel");
 const {
     comparePassword,
     hashPassword,
@@ -161,6 +162,11 @@ const seniorController = {
                 createdBy: req.admin._id,
             });
             await newSenior.save();
+
+            await new BalanceAccount({
+                ownerModel: "Senior",
+                owner: newSenior._id,
+            }).save();
 
             res.status(201).json({ message: "Senior senior registered successfully" });
         } catch (error) {

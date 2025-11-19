@@ -1,6 +1,6 @@
 const Admin = require("../models/adminModel");
 const { comparePassword, hashPassword, generateAccessToken, generateRefreshToken } = require("../utils/helper");
-
+const BalanceAccount = require("../models/balanceAccountModel");
 const adminController = {
     // ------------------- LOGIN ADMIN -------------------
     adminLoign: async (req, res) => {
@@ -55,10 +55,15 @@ const adminController = {
 
             await newAdmin.save();
 
-            res.status(201).json({ message: "Admin created successfully", admin: newAdmin });
+            await new BalanceAccount({ owner: newAdmin._id, ownerModel: "Admin" }).save();
+
+            res.status(201).json({
+                message: "Admin created successfully",
+                admin: { ...newAdmin.toObject(), password: undefined },
+            });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "Server error" });
+            res.status(500).json({ message: error.message });
         }
     },
 

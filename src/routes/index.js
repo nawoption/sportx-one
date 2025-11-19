@@ -10,4 +10,6 @@ router.use("/agent", require("./agentRoute"));
 
 router.use("/user", require("./userRoute"));
 
+router.use("/payment-transaction", require("./paymentTransactionRoute"));
+
 module.exports = router;

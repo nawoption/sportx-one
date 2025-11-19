@@ -132,6 +132,57 @@ const userAuth = async (req, res, next) => {
     }
 };
 
+// Authenticate any role (Admin | Senior | Master | Agent | User)
+const anyAuth = async (req, res, next) => {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+        try {
+            token = req.headers.authorization.split(" ")[1];
+            const decoded = verifyToken(token);
+
+            // Try each model in order
+            const admin = await Admin.findById(decoded.id).select("-password");
+            if (admin) {
+                req.admin = admin;
+                return next();
+            }
+
+            const senior = await Senior.findById(decoded.id).select("-password");
+            if (senior) {
+                req.senior = senior;
+                return next();
+            }
+
+            const master = await Master.findById(decoded.id).select("-password");
+            if (master) {
+                req.master = master;
+                return next();
+            }
+
+            const agent = await Agent.findById(decoded.id).select("-password");
+            if (agent) {
+                req.agent = agent;
+                return next();
+            }
+
+            const user = await User.findById(decoded.id).select("-password");
+            if (user) {
+                req.user = user;
+                return next();
+            }
+
+            return res.status(401).json({ message: "User not found" });
+        } catch (error) {
+            return res.status(401).json({ message: error.message });
+        }
+    }
+
+    if (!token) {
+        return res.status(401).json({ message: "Not authorized, no token" });
+    }
+};
+
 // Helper to determine who is making the request
 const getActor = (req) => {
     if (req.admin) return { type: "Admin", id: req.admin._id };
@@ -257,6 +308,7 @@ module.exports = {
     masterAuth,
     agentAuth,
     userAuth,
+    anyAuth,
     canEditUser,
     canEditAgent,
     canEditMaster,
