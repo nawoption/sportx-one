@@ -8,4 +8,8 @@ const { paymentTransactionSchema } = require("../validations/paymentValidation")
 // Any authenticated role can create a transaction (actor is taken from the token)
 router.post("/create", anyAuth, validateBody(paymentTransactionSchema), PaymentController.createTransaction);
 
+router.get("/", anyAuth, PaymentController.getTransactions);
+
+router.get("/my-balance", anyAuth, PaymentController.getMyBalance);
+
 module.exports = router;

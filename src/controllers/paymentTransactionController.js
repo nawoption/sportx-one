@@ -98,6 +98,70 @@ const paymentTransactionController = {
             return res.status(500).json({ message: error.message });
         }
     },
+
+    getTransactions: async (req, res) => {
+        const actor = getActor(req);
+        if (!actor) return res.status(401).json({ message: "Not authorized" });
+
+        const { startDate, endDate, lineType = "downline", page = 1, limit = 20 } = req.query;
+        const skip = (page - 1) * limit;
+
+        try {
+            const query = {};
+            if (lineType === "upline") {
+                query.to = actor.id;
+                query.toModel = actor.type;
+            } else if (lineType === "downline") {
+                query.from = actor.id;
+                query.fromModel = actor.type;
+            }
+
+            if (startDate) {
+                query.createdAt = { ...query.createdAt, $gte: new Date(startDate) };
+            }
+            if (endDate) {
+                query.createdAt = { ...query.createdAt, $lte: new Date(endDate) };
+            }
+
+            const transactions = await PaymentTransaction.find(query)
+                .sort({ createdAt: -1 })
+                .skip(Number(skip))
+                .limit(Number(limit))
+                .populate("from")
+                .populate("to");
+
+            const total = await PaymentTransaction.countDocuments(query);
+
+            return res.status(200).json({
+                lineType,
+                total,
+                page: Number(page),
+                limit: Number(limit),
+                totalPages: Math.ceil(total / limit),
+                transactions,
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: error.message });
+        }
+    },
+
+    getMyBalance: async (req, res) => {
+        const actor = getActor(req);
+        if (!actor) return res.status(401).json({ message: "Not authorized" });
+
+        try {
+            const balanceAccount = await BalanceAccount.findOne({ owner: actor.id, ownerModel: actor.type });
+            if (!balanceAccount) {
+                return res.status(404).json({ message: "Balance account not found" });
+            }
+
+            return res.status(200).json({ balanceAccount });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: error.message });
+        }
+    },
 };
 
 module.exports = paymentTransactionController;
