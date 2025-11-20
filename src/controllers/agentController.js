@@ -44,7 +44,7 @@ const agentController = {
             res.status(200).json({
                 message: "Login successful",
                 token,
-                agent: { ...agent.toObject(), password: undefined },
+                user: { ...agent.toObject(), password: undefined },
                 balanceAccount,
             });
         } catch (error) {

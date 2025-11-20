@@ -45,7 +45,7 @@ const masterController = {
             res.status(200).json({
                 message: "Login successful",
                 token,
-                master: { ...master.toObject(), password: undefined },
+                user: { ...master.toObject(), password: undefined },
                 balanceAccount,
             });
         } catch (error) {

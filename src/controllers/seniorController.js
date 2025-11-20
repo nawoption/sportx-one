@@ -44,7 +44,7 @@ const seniorController = {
             res.status(200).json({
                 message: "Login successful",
                 token,
-                senior: { ...senior.toObject(), password: undefined },
+                user: { ...senior.toObject(), password: undefined },
                 balanceAccount,
             });
         } catch (error) {

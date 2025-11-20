@@ -26,7 +26,7 @@ const adminController = {
             res.status(200).json({
                 message: "Login successful",
                 token,
-                admin: { ...admin.toObject(), password: undefined },
+                user: { ...admin.toObject(), password: undefined },
             });
         } catch (error) {
             console.error(error);
