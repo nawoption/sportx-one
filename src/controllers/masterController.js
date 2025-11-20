@@ -1,6 +1,8 @@
 const Master = require("../models/masterModel");
 const LimitSetting = require("../models/limitSettingModel");
 const CommissionSetting = require("../models/commissionSettingModel");
+const BalanceAccount = require("../models/balanceAccountModel");
+
 const {
     comparePassword,
     hashPassword,
@@ -37,10 +39,14 @@ const masterController = {
             const refreshToken = generateRefreshToken({ id: master._id });
             const token = { accessToken, refreshToken };
 
+            //
+            const balanceAccount = await BalanceAccount.findOne({ owner: master._id, ownerModel: "Master" });
+
             res.status(200).json({
                 message: "Login successful",
                 token,
                 master: { ...master.toObject(), password: undefined },
+                balanceAccount,
             });
         } catch (error) {
             console.error(error);
@@ -61,7 +67,9 @@ const masterController = {
                 return res.status(404).json({ message: "master not found" });
             }
 
-            res.status(200).json(master);
+            const balanceAccount = await BalanceAccount.findOne({ owner: master._id, ownerModel: "Master" });
+
+            res.status(200).json({ master, balanceAccount });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Server error" });
@@ -173,6 +181,12 @@ const masterController = {
             });
 
             await newMaster.save();
+
+            // Create BalanceAccount for the new Master
+            await new BalanceAccount({
+                owner: newMaster._id,
+                ownerModel: "Master",
+            }).save();
 
             res.status(201).json({ message: "master registered successfully" });
         } catch (error) {

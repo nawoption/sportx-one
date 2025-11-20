@@ -6,8 +6,6 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: true },
         contact: { type: String },
         role: { type: String, default: "User" },
-        cashBalance: { type: Number, default: 0 },
-        accountBalance: { type: Number, default: 0 },
         limitSetting: { type: mongoose.Schema.Types.ObjectId, ref: "LimitSetting" },
         senior: { type: mongoose.Schema.Types.ObjectId, ref: "Senior" },
         master: { type: mongoose.Schema.Types.ObjectId, ref: "Master" },

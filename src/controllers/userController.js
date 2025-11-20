@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
 const LimitSetting = require("../models/limitSettingModel");
 const CommissionSetting = require("../models/commissionSettingModel");
+const BalanceAccount = require("../models/balanceAccountModel");
+
 const {
     comparePassword,
     hashPassword,
@@ -35,10 +37,14 @@ const userController = {
             const refreshToken = generateRefreshToken({ id: user._id });
             const token = { accessToken, refreshToken };
 
+            // Balance Account fetch
+            const balanceAccount = await BalanceAccount.findOne({ owner: user._id, ownerModel: "User" });
+
             res.status(200).json({
                 message: "Login successful",
                 token,
                 user: { ...user.toObject(), password: undefined },
+                balanceAccount,
             });
         } catch (error) {
             console.error(error);
@@ -56,7 +62,9 @@ const userController = {
                 return res.status(404).json({ message: "user not found" });
             }
 
-            res.status(200).json(user);
+            const balanceAccount = await BalanceAccount.findOne({ owner: user._id, ownerModel: "User" });
+
+            res.status(200).json({ user, balanceAccount });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Server error" });
@@ -135,7 +143,7 @@ const userController = {
 
     register: async (req, res) => {
         try {
-            const { username, password, limit, commission } = req.body;
+            const { username, password, limit } = req.body;
 
             // Determine who is creating this user
             const actor = req.admin || req.senior || req.master || req.agent;
@@ -152,16 +160,12 @@ const userController = {
             const limitSetting = new LimitSetting({ ...limit, createdBy });
             await limitSetting.save();
 
-            const commissionSetting = new CommissionSetting({ ...commission, createdBy });
-            await commissionSetting.save();
-
             const hashedPassword = await hashPassword(password);
 
             const newUser = new User({
                 username,
                 password: hashedPassword,
                 limitSetting: limitSetting._id,
-                commissionSetting: commissionSetting._id,
                 senior: req.senior ? req.senior._id : null,
                 master: req.master ? req.master._id : null,
                 agent: req.agent ? req.agent._id : null,
@@ -170,6 +174,13 @@ const userController = {
             });
 
             await newUser.save();
+
+            // Create BalanceAccount for the new user
+            const balanceAccount = new BalanceAccount({
+                owner: newUser._id,
+                ownerModel: "User",
+            });
+            await balanceAccount.save();
 
             res.status(201).json({
                 message: "user registered successfully",

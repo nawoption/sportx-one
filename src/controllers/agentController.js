@@ -1,6 +1,8 @@
 const Agent = require("../models/agentModel");
 const LimitSetting = require("../models/limitSettingModel");
 const CommissionSetting = require("../models/commissionSettingModel");
+const BalanceAccount = require("../models/balanceAccountModel");
+
 const {
     comparePassword,
     hashPassword,
@@ -37,10 +39,13 @@ const agentController = {
             const refreshToken = generateRefreshToken({ id: agent._id });
             const token = { accessToken, refreshToken };
 
+            const balanceAccount = await BalanceAccount.findOne({ owner: agent._id, ownerModel: "Agent" });
+
             res.status(200).json({
                 message: "Login successful",
                 token,
                 agent: { ...agent.toObject(), password: undefined },
+                balanceAccount,
             });
         } catch (error) {
             console.error(error);
@@ -61,7 +66,10 @@ const agentController = {
                 return res.status(404).json({ message: "agent not found" });
             }
 
-            res.status(200).json(agent);
+            // Get balance account
+            const balanceAccount = await BalanceAccount.findOne({ owner: agent._id, ownerModel: "Agent" });
+
+            res.status(200).json({ agent, balanceAccount });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Server error" });
@@ -174,6 +182,13 @@ const agentController = {
             });
 
             await newagent.save();
+
+            // Create BalanceAccount for the new agent
+            const balanceAccount = new BalanceAccount({
+                owner: newagent._id,
+                ownerModel: "Agent",
+            });
+            await balanceAccount.save();
 
             res.status(201).json({ message: "agent registered successfully" });
         } catch (error) {

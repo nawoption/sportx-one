@@ -38,10 +38,14 @@ const seniorController = {
             const refreshToken = generateRefreshToken({ id: senior._id });
             const token = { accessToken, refreshToken };
 
+            // Back to client
+            const balanceAccount = await BalanceAccount.findOne({ owner: senior._id, ownerModel: "Senior" });
+
             res.status(200).json({
                 message: "Login successful",
                 token,
                 senior: { ...senior.toObject(), password: undefined },
+                balanceAccount,
             });
         } catch (error) {
             console.error(error);
@@ -62,7 +66,9 @@ const seniorController = {
                 return res.status(404).json({ message: "senior not found" });
             }
 
-            res.status(200).json(senior);
+            const balanceAccount = await BalanceAccount.findOne({ owner: senior._id, ownerModel: "Senior" });
+
+            res.status(200).json({ senior, balanceAccount });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Server error" });

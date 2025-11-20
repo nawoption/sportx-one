@@ -15,6 +15,13 @@ const accountUpdateSchema = Joi.object({
     commission: commissionValidationSchema.required(),
 });
 
+const userAccountCreateSchema = Joi.object({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(6).required(),
+    contact: Joi.string().optional(),
+    limit: limitValidationSchema.required(),
+});
+
 const userAccountUpdateSchema = Joi.object({
     limit: limitValidationSchema.required(),
 });
@@ -22,5 +29,6 @@ const userAccountUpdateSchema = Joi.object({
 module.exports = {
     accountCreateSchema,
     accountUpdateSchema,
+    userAccountCreateSchema,
     userAccountUpdateSchema,
 };
