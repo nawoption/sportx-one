@@ -3,7 +3,6 @@ const Senior = require("../models/seniorModel");
 const Master = require("../models/masterModel");
 const Agent = require("../models/agentModel");
 const User = require("../models/userModel");
-
 const { verifyToken } = require("../utils/helper");
 
 // Verify token and attach admin to request
@@ -313,4 +312,5 @@ module.exports = {
     canEditAgent,
     canEditMaster,
     requireRole,
+    getActor,
 };

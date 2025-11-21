@@ -31,4 +31,9 @@ const paymentTransactionSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("PaymentTransaction", paymentTransactionSchema);
+// Prevent OverwriteModelError when this file is required multiple times
+// (common during hot-reload or in tests). Reuse existing compiled model if present.
+const MODEL_NAME = "PaymentTransaction";
+module.exports = mongoose.models[MODEL_NAME]
+    ? mongoose.model(MODEL_NAME)
+    : mongoose.model(MODEL_NAME, paymentTransactionSchema);

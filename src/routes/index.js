@@ -12,4 +12,6 @@ router.use("/user", require("./userRoute"));
 
 router.use("/payment-transaction", require("./paymentTransactionRoute"));
 
+router.use("/member", require("./memberRoute"));
+
 module.exports = router;
